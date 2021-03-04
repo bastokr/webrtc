@@ -1,4 +1,4 @@
-import 'dart:async';
+ import 'dart:async';
 import 'dart:core';
 
 import 'package:flutter/material.dart';
@@ -189,60 +189,7 @@ class _MyAppState extends State<LoopBackSample> {
           break;
       }
 
-      /*
-      await _peerConnection.addTransceiver(
-        track: _localStream.getAudioTracks()[0],
-        init: RTCRtpTransceiverInit(
-            direction: TransceiverDirection.SendRecv, streams: [_localStream]),
-      );
-      */
-      /*
-      // ignore: unused_local_variable
-      var transceiver = await _peerConnection.addTransceiver(
-        track: _localStream.getVideoTracks()[0],
-        init: RTCRtpTransceiverInit(
-            direction: TransceiverDirection.SendRecv, streams: [_localStream]),
-      );
-      */
-
-      /*
-      // Unified-Plan Simulcast
-      await _peerConnection.addTransceiver(
-          track: _localStream.getVideoTracks()[0],
-          init: RTCRtpTransceiverInit(
-            direction: TransceiverDirection.SendOnly,
-            streams: [_localStream],
-            sendEncodings: [
-              // for firefox order matters... first high resolution, then scaled resolutions...
-              RTCRtpEncoding(
-                rid: 'f',
-                maxBitrate: 900000,
-                numTemporalLayers: 3,
-              ),
-              RTCRtpEncoding(
-                rid: 'h',
-                numTemporalLayers: 3,
-                maxBitrate: 300000,
-                scaleResolutionDownBy: 2.0,
-              ),
-              RTCRtpEncoding(
-                rid: 'q',
-                numTemporalLayers: 3,
-                maxBitrate: 100000,
-                scaleResolutionDownBy: 4.0,
-              ),
-            ],
-          ));
-      
-      await _peerConnection.addTransceiver(
-          kind: RTCRtpMediaType.RTCRtpMediaTypeVideo);
-      await _peerConnection.addTransceiver(
-          kind: RTCRtpMediaType.RTCRtpMediaTypeVideo);
-      await _peerConnection.addTransceiver(
-          kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
-          init:
-              RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly));
-      */
+     
       var description = await _peerConnection.createOffer(offerSdpConstraints);
       var sdp = description.sdp;
       print('sdp = $sdp');

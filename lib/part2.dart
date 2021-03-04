@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 // import 'package:flutter_webrtc/web/rtc_session_description.dart';
+//import 'package:flutter_webrtc/webrtc.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:sdp_transform/sdp_transform.dart';
 
@@ -172,9 +173,8 @@ class _MyHomePageState extends State<MyHomePage> {
     MediaStream stream = await navigator.getUserMedia(mediaConstraints);
 
     // _localStream = stream;
-    _localRenderer.srcObject = stream;
-    //_localRenderer.mirror = true;
- 
+    _localRenderer.srcObject = stream; 
+
     // _peerConnection.addStream(stream);
 
     return stream;
@@ -188,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
             key: new Key("local"),
             margin: new EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 5.0),
             decoration: new BoxDecoration(color: Colors.black),
-            child: new RTCVideoView(_localRenderer,mirror: true)
+            child: new RTCVideoView(_localRenderer,mirror: true),
           ),
         ),
         Flexible(
@@ -196,7 +196,7 @@ class _MyHomePageState extends State<MyHomePage> {
               key: new Key("remote"),
               margin: new EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 5.0),
               decoration: new BoxDecoration(color: Colors.black),
-              child: new RTCVideoView(_remoteRenderer,mirror: true)),
+              child: new RTCVideoView(_remoteRenderer)),
         )
       ]));
 
