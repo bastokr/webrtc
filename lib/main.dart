@@ -1,10 +1,14 @@
- import 'dart:convert';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 // import 'package:flutter_webrtc/web/rtc_session_description.dart';
 //import 'package:flutter_webrtc/webrtc.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:sdp_transform/sdp_transform.dart';
+import 'package:webrtc/src/loopback_sample.dart';
+import 'package:webrtc/src/route_item.dart';
+import 'dart:async';
+import 'dart:core';
 
 void main() {
   runApp(MyApp());
@@ -35,10 +39,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   bool _offer = false;
   RTCPeerConnection _peerConnection;
   MediaStream _localStream;
+  bool _inCalling = false;
   RTCVideoRenderer _localRenderer = new RTCVideoRenderer();
   RTCVideoRenderer _remoteRenderer = new RTCVideoRenderer();
   String get sdpSemantics =>
@@ -55,81 +59,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    initRenderers();
-  
     super.initState();
+    initRenderers();
   }
 
-void _getview(){
-_createPeerConnection().then((pc) {
-      _peerConnection = pc;
-    });
-
-}
- 
-  initRenderers() async {
-    await _localRenderer.initialize();
-    await _remoteRenderer.initialize();
+  void _makeCall2() {
+    // _createPeerConnection().then((pc) {
+    //   _peerConnection = pc;
+    //      _inCalling=true;
+    //   });
   }
 
-  void _createOffer() async {
-    RTCSessionDescription description =
-        await _peerConnection.createOffer({'offerToReceiveVideo': 1});
-    var session = parse(description.sdp);
-    print(json.encode(session));
-    _offer = true;
-
-      print(json.encode({
-            'sdp': description.sdp.toString(),
-            'type': description.type.toString(),
-          }));
-sdpController.text=json.encode({
-            'sdp': description.sdp.toString(),
-            'type': description.type.toString(),
-          });
-    _peerConnection.setLocalDescription(description);
-  }
-
-  void _createAnswer() async {
-    RTCSessionDescription description =
-        await _peerConnection.createAnswer({'offerToReceiveVideo': 1});
-
-    var session = parse(description.sdp);
-    print(json.encode(session));
-      print(json.encode({
-            'sdp': description.sdp.toString(),
-           'type': description.type.toString(),
-          }));
-
-    _peerConnection.setLocalDescription(description);
-  }
-
-  void _setRemoteDescription() async {
-    String jsonString = sdpController.text;
-    dynamic session = await jsonDecode('$jsonString');
-
-    String sdp = write(session, null);
-    
-    // RTCSessionDescription description =
-    //     new RTCSessionDescription(session['sdp'], session['type']);
-    RTCSessionDescription description =
-        new RTCSessionDescription(sdp, _offer ? 'answer' : 'offer');
-    print(description.toMap());
-
-    await _peerConnection.setRemoteDescription(description);
-  }
-
-  void _addCandidate() async {
-    String jsonString = sdpController.text;
-    dynamic session = await jsonDecode('$jsonString');
-    print(session['candidate']);
-    dynamic candidate =
-        new RTCIceCandidate(session['candidate'], session['sdpMid'], session['sdpMlineIndex']);
-    await _peerConnection.addCandidate(candidate);
-  }
-
-  Future<RTCPeerConnection> _createPeerConnection() async {
-     final mediaConstraints = <String, dynamic>{
+  // Platform messages are asynchronous, so we initialize in an async method.
+  void _makeCall() async {
+    final mediaConstraints = <String, dynamic>{
       'audio': true,
       'video': {
         'mandatory': {
@@ -143,7 +86,6 @@ sdpController.text=json.encode({
       }
     };
 
- 
     var configuration = <String, dynamic>{
       'iceServers': [
         {'url': 'stun:stun.l.google.com:19302'},
@@ -153,7 +95,7 @@ sdpController.text=json.encode({
 
     final offerSdpConstraints = <String, dynamic>{
       'mandatory': {
-        'OfferToReceiveAudio': false,
+        'OfferToReceiveAudio': true,
         'OfferToReceiveVideo': true,
       },
       'optional': [],
@@ -166,35 +108,18 @@ sdpController.text=json.encode({
       ],
     };
 
-    if (_peerConnection != null) return null;
-    var description = await _peerConnection.createOffer(offerSdpConstraints);
-      var sdp = description.sdp;
-      print('sdp = $sdp');
-      await _peerConnection.setLocalDescription(description);
-      //change for loopback.
-      description.type = 'answer';
-      await _peerConnection.setRemoteDescription(description);
+    if (_peerConnection != null) return;
 
-
-
-    _localStream = await _getUserMedia();
     try {
       _peerConnection =
           await createPeerConnection(configuration, loopbackConstraints);
-/*
-      _peerConnection.onSignalingState = _onSignalingState;
-      _peerConnection.onIceGatheringState = _onIceGatheringState;
-      _peerConnection.onIceConnectionState = _onIceConnectionState;
-      _peerConnection.onConnectionState = _onPeerConnectionState;
-      _peerConnection.onAddStream = _onAddStream;
-      _peerConnection.onRemoveStream = _onRemoveStream;
-      _peerConnection.onIceCandidate = _onCandidate;
-      _peerConnection.onRenegotiationNeeded = _onRenegotiationNeeded;
-*/
+
       _localStream =
           await navigator.mediaDevices.getUserMedia(mediaConstraints);
+
+          
       _localRenderer.srcObject = _localStream;
-/*
+
       switch (sdpSemantics) {
         case 'plan-b':
           await _peerConnection.addStream(_localStream);
@@ -206,57 +131,137 @@ sdpController.text=json.encode({
           });
           break;
       }
+
+      var description = await _peerConnection.createOffer(offerSdpConstraints);
+      var sdp = description.sdp;
+      print('sdp = $sdp');
+      await _peerConnection.setLocalDescription(description);
+      //change for loopback.
+      description.type = 'answer';
+      await _peerConnection.setRemoteDescription(description);
+
+      _peerConnection.onIceCandidate = (e) {
+        if (e.candidate != null) {
+          print(json.encode({
+            'candidate': e.candidate.toString(),
+            'sdpMid': e.sdpMid.toString(),
+            'sdpMlineIndex': e.sdpMlineIndex,
+          }));
+        }
+      };
+
+      _peerConnection.onIceConnectionState = (e) {
+        print(e);
+      };
+
+      _peerConnection.onAddStream = (stream) {
+        print('addStream: ' + stream.id);
+        _remoteRenderer.srcObject = stream;
+      };
+
+      /* Unfied-Plan replaceTrack
+      var stream = await MediaDevices.getDisplayMedia(mediaConstraints);
+      _localRenderer.srcObject = _localStream;
+      await transceiver.sender.replaceTrack(stream.getVideoTracks()[0]);
+      // do re-negotiation ....
       */
-} catch (e) {
+    } catch (e) {
       print(e.toString());
     }
-     
+    if (!mounted) return;
+
+    // _timer = Timer.periodic(Duration(seconds: 1), handleStatsReport);
+
+    setState(() {
+      _inCalling = true;
+    });
+  }
+
+  void _hangUp() async {
+    try {
+      await _localStream.dispose();
+      await _peerConnection.close();
+      _peerConnection = null;
+      _localRenderer.srcObject = null;
+      _remoteRenderer.srcObject = null;
+    } catch (e) {
+      print(e.toString());
+    }
+    setState(() {
+      _inCalling = false;
+    });
+    //  _timer.cancel();
+  }
+
+  initRenderers() async {
+    await _localRenderer.initialize();
+    await _remoteRenderer.initialize();
+  }
+
+  void _createOffer() async {
+    RTCSessionDescription description =
+        await _peerConnection.createOffer({'offerToReceiveVideo': 1});
+    var session = parse(description.sdp);
+    print(json.encode(session));
+    _offer = true;
+
+    // print(json.encode({
+    //       'sdp': description.sdp.toString(),
+    //       'type': description.type.toString(),
+    //     }));
+
+    _peerConnection.setLocalDescription(description);
+  }
+
+  void _createAnswer() async {
+    RTCSessionDescription description =
+        await _peerConnection.createAnswer({'offerToReceiveVideo': 1});
+
+    var session = parse(description.sdp);
+    print(json.encode(session));
+    // print(json.encode({
+    //       'sdp': description.sdp.toString(),
+    //       'type': description.type.toString(),
+    //     }));
+
+    _peerConnection.setLocalDescription(description);
+  }
+
+  void _setRemoteDescription() async {
+    String jsonString = sdpController.text;
+    dynamic session = await jsonDecode('$jsonString');
+
+    String sdp = write(session, null);
+
+    // RTCSessionDescription description =
+    //     new RTCSessionDescription(session['sdp'], session['type']);
+    RTCSessionDescription description =
+        new RTCSessionDescription(sdp, _offer ? 'answer' : 'offer');
+    print(description.toMap());
+
+    await _peerConnection.setRemoteDescription(description);
+  }
+
+  void _addCandidate() async {
+    String jsonString = sdpController.text;
+    dynamic session = await jsonDecode('$jsonString');
+    print(session['candidate']);
+    dynamic candidate = new RTCIceCandidate(
+        session['candidate'], session['sdpMid'], session['sdpMlineIndex']);
+    await _peerConnection.addCandidate(candidate);
+  }
+ 
+
+  void _onTrack(RTCTrackEvent event) {
+    print('onTrack');
+    if (event.track.kind == 'video' && event.streams.isNotEmpty) {
+      print('New stream: ' + event.streams[0].id);
+      _remoteRenderer.srcObject = event.streams[0];
+    }
+  }
+
    
 
-   // RTCPeerConnection pc = await createPeerConnection(configuration, offerSdpConstraints);
-    // if (pc != null) print(pc);
-    _peerConnection.addStream(_localStream);
-
-    _peerConnection.onIceCandidate = (e) {
-      if (e.candidate != null) {
-        print(json.encode({
-          'candidate': e.candidate.toString(),
-          'sdpMid': e.sdpMid.toString(),
-          'sdpMlineIndex': e.sdpMlineIndex,
-        }));
-      }
-    };
-
-    _peerConnection.onIceConnectionState = (e) {
-      print(e);
-    };
-
-    _peerConnection.onAddStream = (stream) {
-      print('addStream: ' + stream.id);
-      _remoteRenderer.srcObject = stream;
-    };
-
-    return _peerConnection;
-  }
- 
-  Future<MediaStream> _getUserMedia() async {
-    final Map<String, dynamic> mediaConstraints = {
-      'audio': false,
-      'video': {
-        'facingMode': 'user',
-      },
-    };
-
-    MediaStream stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
-
-    // _localStream = stream;
-    _localRenderer.srcObject = stream; 
-
-    // _peerConnection.addStream(stream);
-
-    return stream;
-  }
- 
   SizedBox videoRenderers() => SizedBox(
       height: 210,
       child: Row(children: [
@@ -265,7 +270,7 @@ sdpController.text=json.encode({
             key: new Key("local"),
             margin: new EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 5.0),
             decoration: new BoxDecoration(color: Colors.black),
-            child: new RTCVideoView(_localRenderer,mirror: true),
+            child: new RTCVideoView(_localRenderer, mirror: true),
           ),
         ),
         Flexible(
@@ -330,6 +335,11 @@ sdpController.text=json.encode({
         appBar: AppBar(
           title: Text(widget.title),
         ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _inCalling ? _hangUp : _makeCall,
+          tooltip: _inCalling ? 'Hangup' : 'Call',
+          child: Icon(_inCalling ? Icons.call_end : Icons.phone),
+        ),
         body: Container(
             child: Column(children: [
           videoRenderers(),
@@ -337,10 +347,16 @@ sdpController.text=json.encode({
           sdpCandidatesTF(),
           sdpCandidateButtons(),
           RaisedButton(
-          onPressed: _getview,
-          child: Text('view'),
-          color: Colors.amber,
-        )
+            child: Text('둥근 버튼'),
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (BuildContext context) => LoopBackSample()));
+            },
+            shape: RoundedRectangleBorder(
+                borderRadius: new BorderRadius.circular(30.0)),
+          )
         ])));
   }
 }
