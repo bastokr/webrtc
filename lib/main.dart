@@ -134,6 +134,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
       var description = await _peerConnection.createOffer(offerSdpConstraints);
       var sdp = description.sdp;
+
+        var session = parse(description.sdp);
+        print(json.encode(session));
+        _offer = true;
+
+sdpController.text=json.encode(session);
+
       print('sdp = $sdp');
       await _peerConnection.setLocalDescription(description);
       //change for loopback.
@@ -147,6 +154,8 @@ class _MyHomePageState extends State<MyHomePage> {
             'sdpMid': e.sdpMid.toString(),
             'sdpMlineIndex': e.sdpMlineIndex,
           }));
+
+           
         }
       };
 
