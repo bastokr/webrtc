@@ -134,13 +134,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
       var description = await _peerConnection.createOffer(offerSdpConstraints);
       var sdp = description.sdp;
-
-        var session = parse(description.sdp);
-        print(json.encode(session));
-        _offer = true;
-
-sdpController.text=json.encode(session);
-
       print('sdp = $sdp');
       await _peerConnection.setLocalDescription(description);
       //change for loopback.
@@ -154,8 +147,6 @@ sdpController.text=json.encode(session);
             'sdpMid': e.sdpMid.toString(),
             'sdpMlineIndex': e.sdpMlineIndex,
           }));
-
-           
         }
       };
 
@@ -232,7 +223,7 @@ sdpController.text=json.encode(session);
     //       'sdp': description.sdp.toString(),
     //       'type': description.type.toString(),
     //     }));
-
+sdpController.text=json.encode(session);
     _peerConnection.setLocalDescription(description);
   }
 
