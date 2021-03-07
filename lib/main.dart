@@ -160,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
         };
 
         print(sendData);
-        if (!_offer) {
+       
           http.Response response =
               await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
                   headers: {
@@ -170,7 +170,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   body: json.encode(sendData),
                   encoding: Encoding.getByName("utf-8"));
           print(response.statusCode);
-        }
+        
       };
 
       _peerConnection.onIceConnectionState = (e) {
