@@ -73,6 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   void _makeCall() async {
+    _offer=false;
     final mediaConstraints = <String, dynamic>{
       'audio': true,
       'video': {
@@ -151,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
         var sendData = {
           "chat_id": "test",
-          "offer": {
+          "candidate": {
             'candidate': e.candidate.toString(),
             'sdpMid': e.sdpMid.toString(),
             'sdpMlineIndex': e.sdpMlineIndex,
@@ -159,8 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
         };
 
         print(sendData);
-
-        _offer = true;
+ 
 
         http.Response response =
             await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
@@ -231,7 +231,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     print(sendData);
 
-    _offer = true;
+  
 
     http.Response response =
         await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
