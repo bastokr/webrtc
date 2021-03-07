@@ -160,16 +160,17 @@ class _MyHomePageState extends State<MyHomePage> {
         };
 
         print(sendData);
-
-        http.Response response =
-            await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
-                headers: {
-                  "Accept": "application/json",
-                  "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: json.encode(sendData),
-                encoding: Encoding.getByName("utf-8"));
-        print(response.statusCode);
+        if (!_offer) {
+          http.Response response =
+              await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
+                  headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/x-www-form-urlencoded"
+                  },
+                  body: json.encode(sendData),
+                  encoding: Encoding.getByName("utf-8"));
+          print(response.statusCode);
+        }
       };
 
       _peerConnection.onIceConnectionState = (e) {
@@ -291,12 +292,30 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _addCandidate() async {
-    String jsonString = sdpController.text;
-    dynamic session = await jsonDecode('$jsonString');
-    print(session['candidate']);
-    dynamic candidate = new RTCIceCandidate(session['candidate'],
-        session['sdpMid'], int.parse(session['sdpMlineIndex'].toString()));
-    await _peerConnection.addCandidate(candidate);
+    http.get(
+      Uri.parse('http://www.toolsda.com/GET_CHAT/test'),
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+    ).then((res) {
+      if (res.statusCode == 200) {
+        var list = jsonDecode(res.body) as List;
+        String jsonString = list[0]['candidate'];
+        sdpController.text = jsonString;
+
+        dynamic session = jsonDecode('$jsonString');
+        // String sdp = write(session, null);
+        // RTCSessionDescription description =
+        //     new RTCSessionDescription(session['sdp'], session['type']);
+        //   String jsonString = sdpController.text;
+        //dynamic session = await jsonDecode('$jsonString');
+        print(session['candidate']);
+        dynamic candidate = new RTCIceCandidate(session['candidate'],
+            session['sdpMid'], int.parse(session['sdpMlineIndex'].toString()));
+        _peerConnection.addCandidate(candidate);
+      }
+    });
   }
 
   void _onTrack(RTCTrackEvent event) {
