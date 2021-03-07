@@ -74,6 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // Platform messages are asynchronous, so we initialize in an async method.
   void _makeCall() async {
     _offer = false;
+    /*
     final mediaConstraints = <String, dynamic>{
       'audio': true,
       'video': {
@@ -87,6 +88,14 @@ class _MyHomePageState extends State<MyHomePage> {
         'optional': [],
       }
     };
+*/
+
+    final Map<String, dynamic> mediaConstraints = {
+      'audio': false,
+      'video': {
+        'facingMode': 'user',
+      }
+    };
 
     var configuration = <String, dynamic>{
       'iceServers': [
@@ -94,13 +103,21 @@ class _MyHomePageState extends State<MyHomePage> {
       ],
       'sdpSemantics': sdpSemantics
     };
-
+/*
     final offerSdpConstraints = <String, dynamic>{
       'mandatory': {
         'OfferToReceiveAudio': true,
         'OfferToReceiveVideo': true,
       },
       'optional': [],
+    };
+*/
+    final Map<String, dynamic> offerSdpConstraints = {
+      "mandatory": {
+        "OfferToReceiveAudio": true,
+        "OfferToReceiveVideo": true,
+      },
+      "optional": [],
     };
 
     final loopbackConstraints = <String, dynamic>{
