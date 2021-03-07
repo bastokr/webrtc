@@ -152,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
         var sendData = {
           "chat_id": "test",
-          "offer" :_offer,
+          "offer": _offer,
           "candidate": {
             'candidate': e.candidate.toString(),
             'sdpMid': e.sdpMid.toString(),
@@ -161,17 +161,16 @@ class _MyHomePageState extends State<MyHomePage> {
         };
 
         print(sendData);
-       
-          http.Response response =
-              await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
-                  headers: {
-                    "Accept": "application/json",
-                    "Content-Type": "application/x-www-form-urlencoded"
-                  },
-                  body: json.encode(sendData),
-                  encoding: Encoding.getByName("utf-8"));
-          print(response.statusCode);
-        
+
+        http.Response response =
+            await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
+                headers: {
+                  "Accept": "application/json",
+                  "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: json.encode(sendData),
+                encoding: Encoding.getByName("utf-8"));
+        print(response.statusCode);
       };
 
       _peerConnection.onIceConnectionState = (e) {
@@ -294,7 +293,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _addCandidate() async {
     http.get(
-      Uri.parse('http://www.toolsda.com/GET_CHAT/test'),
+      Uri.parse('http://www.toolsda.com/GET_CANDI/test'),
       headers: {
         "Accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded"
