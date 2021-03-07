@@ -301,19 +301,23 @@ class _MyHomePageState extends State<MyHomePage> {
     ).then((res) {
       if (res.statusCode == 200) {
         var list = jsonDecode(res.body) as List;
-        String jsonString = list[0]['candidate'];
-        sdpController.text = jsonString;
 
-        dynamic session = jsonDecode('$jsonString');
-        // String sdp = write(session, null);
-        // RTCSessionDescription description =
-        //     new RTCSessionDescription(session['sdp'], session['type']);
-        //   String jsonString = sdpController.text;
-        //dynamic session = await jsonDecode('$jsonString');
-        print(session['candidate']);
-        dynamic candidate = new RTCIceCandidate(session['candidate'],
-            session['sdpMid'], int.parse(session['sdpMlineIndex'].toString()));
-        _peerConnection.addCandidate(candidate);
+        for (int i = 0; i < list.length; i++) {
+          String jsonString = list[i]['candidate'];
+          sdpController.text = jsonString;
+          dynamic session = jsonDecode('$jsonString');
+          // String sdp = write(session, null);
+          // RTCSessionDescription description =
+          //     new RTCSessionDescription(session['sdp'], session['type']);
+          //   String jsonString = sdpController.text;
+          //dynamic session = await jsonDecode('$jsonString');
+          print(session['candidate']);
+          dynamic candidate = new RTCIceCandidate(
+              session['candidate'],
+              session['sdpMid'],
+              int.parse(session['sdpMlineIndex'].toString()));
+          _peerConnection.addCandidate(candidate);
+        }
       }
     });
   }
