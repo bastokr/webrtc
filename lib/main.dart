@@ -152,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
         var sendData = {
           "chat_id": "test",
-          "offer" :_offer?"offer":"answer", 
+          "ontype": _offer ? "offer" : "answer",
           "candidate": {
             'candidate': e.candidate.toString(),
             'sdpMid': e.sdpMid.toString(),
