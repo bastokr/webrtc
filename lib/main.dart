@@ -311,6 +311,7 @@ class _MyHomePageState extends State<MyHomePage> {
           //     new RTCSessionDescription(session['sdp'], session['type']);
           //   String jsonString = sdpController.text;
           //dynamic session = await jsonDecode('$jsonString');
+          //test
           print(session['candidate']);
           dynamic candidate = new RTCIceCandidate(
               session['candidate'],
