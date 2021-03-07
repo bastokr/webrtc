@@ -139,7 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
       await _peerConnection.setLocalDescription(description);
       //change for loopback.
       description.type = 'answer';
-      await _peerConnection.setRemoteDescription(description);
+      await _peerConnection.setRemojteDescription(description);
 */
       _peerConnection.onIceCandidate = (e) async {
         if (e.candidate != null) {
@@ -152,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
         var sendData = {
           "chat_id": "test",
-          "offer" :_offer,
+          "offer" :_offer?"offer":"answer",
           "candidate": {
             'candidate': e.candidate.toString(),
             'sdpMid': e.sdpMid.toString(),
