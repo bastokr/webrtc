@@ -73,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   void _makeCall() async {
-    _offer=false;
+    _offer = false;
     final mediaConstraints = <String, dynamic>{
       'audio': true,
       'video': {
@@ -160,7 +160,6 @@ class _MyHomePageState extends State<MyHomePage> {
         };
 
         print(sendData);
- 
 
         http.Response response =
             await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
@@ -222,6 +221,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _createOffer() async {
+    _offer = true;
     RTCSessionDescription description =
         await _peerConnection.createOffer({'offerToReceiveVideo': 1});
     var session = parse(description.sdp);
@@ -230,8 +230,6 @@ class _MyHomePageState extends State<MyHomePage> {
     var sendData = {"chat_id": "test", "offer": session};
 
     print(sendData);
-
-  
 
     http.Response response =
         await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
@@ -252,7 +250,7 @@ class _MyHomePageState extends State<MyHomePage> {
         await _peerConnection.createAnswer({'offerToReceiveVideo': 1});
     var session = parse(description.sdp);
     print(json.encode(session));
-     sdpController.text = json.encode(session);
+    sdpController.text = json.encode(session);
     var sendData = {"chat_id": "test", "answer": session};
     http.Response response =
         await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
@@ -267,16 +265,17 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _setRemoteDescription() async {
-     http
-        .get(Uri.parse('http://www.toolsda.com/GET_CHAT/test'), headers: {
-              "Accept": "application/json",
-              "Content-Type": "application/x-www-form-urlencoded"
-            },)
-        .then((res) {
+    http.get(
+      Uri.parse('http://www.toolsda.com/GET_CHAT/test'),
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+    ).then((res) {
       if (res.statusCode == 200) {
         var list = jsonDecode(res.body) as List;
         String jsonString = _offer ? list[0]['answer'] : list[0]['offer'];
-        sdpController.text=jsonString;
+        sdpController.text = jsonString;
 
         dynamic session = jsonDecode('$jsonString');
         String sdp = write(session, null);
