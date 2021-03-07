@@ -32,6 +32,7 @@ dependencies:
   sdp_transform: ^0.2.0
   flutter_foreground_plugin: ^0.6.0
   path_provider:
+  http: ^0.13.0
 dev_dependencies:
   flutter_test: 
     sdk: flutter

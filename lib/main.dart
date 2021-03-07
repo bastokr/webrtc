@@ -9,6 +9,7 @@ import 'package:webrtc/src/loopback_sample.dart';
 import 'package:webrtc/src/route_item.dart';
 import 'dart:async';
 import 'dart:core';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MyApp());
@@ -112,12 +113,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
     try {
       _peerConnection =
-          await createPeerConnection(configuration, loopbackConstraints);
+          await createPeerConnection(configuration, offerSdpConstraints);
 
       _localStream =
           await navigator.mediaDevices.getUserMedia(mediaConstraints);
 
-          
       _localRenderer.srcObject = _localStream;
 
       switch (sdpSemantics) {
@@ -131,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
           });
           break;
       }
-
+/*
       var description = await _peerConnection.createOffer(offerSdpConstraints);
       var sdp = description.sdp;
       print('sdp = $sdp');
@@ -139,8 +139,8 @@ class _MyHomePageState extends State<MyHomePage> {
       //change for loopback.
       description.type = 'answer';
       await _peerConnection.setRemoteDescription(description);
-
-      _peerConnection.onIceCandidate = (e) {
+*/
+      _peerConnection.onIceCandidate = (e) async {
         if (e.candidate != null) {
           print(json.encode({
             'candidate': e.candidate.toString(),
@@ -148,6 +148,29 @@ class _MyHomePageState extends State<MyHomePage> {
             'sdpMlineIndex': e.sdpMlineIndex,
           }));
         }
+
+        var sendData = {
+          "chat_id": "test",
+          "offer": {
+            'candidate': e.candidate.toString(),
+            'sdpMid': e.sdpMid.toString(),
+            'sdpMlineIndex': e.sdpMlineIndex,
+          }
+        };
+
+        print(sendData);
+
+        _offer = true;
+
+        http.Response response =
+            await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
+                headers: {
+                  "Accept": "application/json",
+                  "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: json.encode(sendData),
+                encoding: Encoding.getByName("utf-8"));
+        print(response.statusCode);
       };
 
       _peerConnection.onIceConnectionState = (e) {
@@ -203,13 +226,24 @@ class _MyHomePageState extends State<MyHomePage> {
         await _peerConnection.createOffer({'offerToReceiveVideo': 1});
     var session = parse(description.sdp);
     print(json.encode(session));
+
+    var sendData = {"chat_id": "test", "offer": session};
+
+    print(sendData);
+
     _offer = true;
 
-    // print(json.encode({
-    //       'sdp': description.sdp.toString(),
-    //       'type': description.type.toString(),
-    //     }));
+    http.Response response =
+        await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
+            headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: json.encode(sendData),
+            encoding: Encoding.getByName("utf-8"));
+    print(response.statusCode);
 
+    sdpController.text = json.encode(session);
     _peerConnection.setLocalDescription(description);
   }
 
@@ -223,34 +257,54 @@ class _MyHomePageState extends State<MyHomePage> {
     //       'sdp': description.sdp.toString(),
     //       'type': description.type.toString(),
     //     }));
-sdpController.text=json.encode(session);
+    sdpController.text = json.encode(session);
+
+    var sendData = {"chat_id": "test", "answer": session};
+
+    print(sendData);
+
+    _offer = true;
+
+    http.Response response =
+        await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
+            headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: json.encode(sendData),
+            encoding: Encoding.getByName("utf-8"));
+    print(response.statusCode);
     _peerConnection.setLocalDescription(description);
   }
 
   void _setRemoteDescription() async {
-    String jsonString = sdpController.text;
-    dynamic session = await jsonDecode('$jsonString');
+    await http
+        .get(Uri.parse('http://www.toolsda.com/GET_CHAT/test'))
+        .then((res) {
+      if (res.statusCode == 200) {
+        var list = jsonDecode(res.body) as List;
+        String jsonString = _offer ? list[0]['offer'] : list[0]['answer'];
+        dynamic session = jsonDecode('$jsonString');
+        String sdp = write(session, null);
+        // RTCSessionDescription description =
+        //     new RTCSessionDescription(session['sdp'], session['type']);
+        RTCSessionDescription description =
+            new RTCSessionDescription(sdp, _offer ? 'answer' : 'offer');
+        print(description.toMap());
 
-    String sdp = write(session, null);
-
-    // RTCSessionDescription description =
-    //     new RTCSessionDescription(session['sdp'], session['type']);
-    RTCSessionDescription description =
-        new RTCSessionDescription(sdp, _offer ? 'answer' : 'offer');
-    print(description.toMap());
-
-    await _peerConnection.setRemoteDescription(description);
+        _peerConnection.setRemoteDescription(description);
+      }
+    });
   }
 
   void _addCandidate() async {
     String jsonString = sdpController.text;
     dynamic session = await jsonDecode('$jsonString');
     print(session['candidate']);
-    dynamic candidate = new RTCIceCandidate(
-        session['candidate'], session['sdpMid'], session['sdpMlineIndex']);
+    dynamic candidate = new RTCIceCandidate(session['candidate'],
+        session['sdpMid'], int.parse(session['sdpMlineIndex'].toString()));
     await _peerConnection.addCandidate(candidate);
   }
- 
 
   void _onTrack(RTCTrackEvent event) {
     print('onTrack');
@@ -259,8 +313,6 @@ sdpController.text=json.encode(session);
       _remoteRenderer.srcObject = event.streams[0];
     }
   }
-
-   
 
   SizedBox videoRenderers() => SizedBox(
       height: 210,
