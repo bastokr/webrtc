@@ -250,21 +250,10 @@ class _MyHomePageState extends State<MyHomePage> {
   void _createAnswer() async {
     RTCSessionDescription description =
         await _peerConnection.createAnswer({'offerToReceiveVideo': 1});
-
     var session = parse(description.sdp);
     print(json.encode(session));
-    // print(json.encode({
-    //       'sdp': description.sdp.toString(),
-    //       'type': description.type.toString(),
-    //     }));
-    sdpController.text = json.encode(session);
-
+     sdpController.text = json.encode(session);
     var sendData = {"chat_id": "test", "answer": session};
-
-    print(sendData);
-
-    _offer = true;
-
     http.Response response =
         await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
             headers: {
@@ -278,12 +267,17 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _setRemoteDescription() async {
-    await http
-        .get(Uri.parse('http://www.toolsda.com/GET_CHAT/test'))
+     http
+        .get(Uri.parse('http://www.toolsda.com/GET_CHAT/test'), headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/x-www-form-urlencoded"
+            },)
         .then((res) {
       if (res.statusCode == 200) {
         var list = jsonDecode(res.body) as List;
-        String jsonString = _offer ? list[0]['offer'] : list[0]['answer'];
+        String jsonString = _offer ? list[0]['answer'] : list[0]['offer'];
+        sdpController.text=jsonString;
+
         dynamic session = jsonDecode('$jsonString');
         String sdp = write(session, null);
         // RTCSessionDescription description =
