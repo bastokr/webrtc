@@ -92,9 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final Map<String, dynamic> mediaConstraints = {
       'audio': false,
-      'video': {
-        'facingMode': 'user',
-      }
+      'video': true
     };
 
     var configuration = <String, dynamic>{
