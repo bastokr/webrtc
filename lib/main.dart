@@ -115,6 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
     registerNotification();
     super.initState();
     initRenderers();
+ _makeCall() ;
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -258,6 +259,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _createOffer() async {
+    _makeCall();
     _offer = true;
     RTCSessionDescription description =
         await _peerConnection.createOffer({'offerToReceiveVideo': 1});
@@ -283,6 +285,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _createAnswer() async {
+    _setRemoteDescription();
     RTCSessionDescription description =
         await _peerConnection.createAnswer({'offerToReceiveVideo': 1});
     var session = parse(description.sdp);
