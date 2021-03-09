@@ -1,0 +1,100 @@
+{
+  "project_info": {
+    "project_number": "456059736311",
+    "project_id": "srnote21",
+    "storage_bucket": "srnote21.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:456059736311:android:b54fbe1d516da509be03f2",
+        "android_client_info": {
+          "package_name": "com.shsoft.srnote"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "456059736311-jjbr5iphmgmon5uhvu7uvd76i0ie5qn9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shsoft.srnote",
+            "certificate_hash": "7e56353976d07dde53b042c81b3662fbbd954046"
+          }
+        },
+        {
+          "client_id": "456059736311-mv08oiffr24rgcsm2g4ko5ff0kbs1c9m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shsoft.srnote",
+            "certificate_hash": "b9bbf8ad0b67d088eda2bda35a48e56a68bef08e"
+          }
+        },
+        {
+          "client_id": "456059736311-o2vv8u8aqefkoc9f460c9p2arku2g2t3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shsoft.srnote",
+            "certificate_hash": "7526f1e2f78aa3a5d5d4ccec0d9ccfa7785d258d"
+          }
+        },
+        {
+          "client_id": "456059736311-fnrpfv88637209so811as01lsr8grlf5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBB215qe5e6aqANO85NF5hjEIzVuUAFDhY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "456059736311-fnrpfv88637209so811as01lsr8grlf5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:456059736311:android:bcd460e66fa9e577be03f2",
+        "android_client_info": {
+          "package_name": "com.srnote.webrtc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "456059736311-cpets7ee43orruuqeq8f50tmahntamsg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.srnote.webrtc",
+            "certificate_hash": "3fc0626ceac00ef9e2c702d0ca595e4024970363"
+          }
+        },
+        {
+          "client_id": "456059736311-fnrpfv88637209so811as01lsr8grlf5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBB215qe5e6aqANO85NF5hjEIzVuUAFDhY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "456059736311-fnrpfv88637209so811as01lsr8grlf5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
