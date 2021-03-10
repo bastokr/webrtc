@@ -1,10 +1,11 @@
- import 'dart:convert';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_webrtc/web/rtc_session_description.dart';
 //import 'package:flutter_webrtc/webrtc.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sdp_transform/sdp_transform.dart';
 import 'package:webrtc/src/loopback_sample.dart';
 import 'dart:async';
@@ -56,6 +57,8 @@ class _MyHomePageState extends State<MyHomePage> {
   String get sdpSemantics =>
       WebRTC.platformIsWindows ? 'plan-b' : 'unified-plan';
   final sdpController = TextEditingController();
+  final offerTextController = TextEditingController();
+  final answerController = TextEditingController();
 
   final String currentUserId = "";
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
@@ -124,7 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     var configuration = <String, dynamic>{
       'iceServers': [
-        {'url': 'stun:stun.l.google.com:19302'},
+        {'url': 'stun:stun3.l.google.com:19302'},
       ],
       'sdpSemantics': sdpSemantics
     };
@@ -193,7 +196,7 @@ class _MyHomePageState extends State<MyHomePage> {
         };
 
         print(sendData);
-    if(!_offer){
+        //if(!_offer){
         http.Response response =
             await http.post(Uri.parse(targetServer + 'CHAT_UPDATE'),
                 headers: {
@@ -204,15 +207,30 @@ class _MyHomePageState extends State<MyHomePage> {
                 encoding: Encoding.getByName("utf-8"));
         print(response.statusCode);
       };
-      };
+      //  };
       _peerConnection.onIceConnectionState = (e) {
         print(e);
       };
 
       _peerConnection.onAddStream = (stream) {
+        Fluttertoast.showToast(
+            msg: "This is Center Short Toast",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+
         print('addStream: ' + stream.id);
+
         _remoteRenderer.srcObject = stream;
+        setState(() {
+          // _remoteRenderer.srcObject = stream;
+        });
       };
+
+      _peerConnection.onConnectionState = (e) {};
 
       /* Unfied-Plan replaceTrack
       var stream = await MediaDevices.getDisplayMedia(mediaConstraints);
@@ -254,7 +272,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _createOffer() async {
-   // _makeCall();
+    // _makeCall();
     _offer = true;
     RTCSessionDescription description =
         await _peerConnection.createOffer({'offerToReceiveVideo': 1});
@@ -275,6 +293,7 @@ class _MyHomePageState extends State<MyHomePage> {
             encoding: Encoding.getByName("utf-8"));
     print(response.statusCode);
 
+    offerTextController.text = json.encode(session);
     sdpController.text = json.encode(session);
     _peerConnection.setLocalDescription(description);
   }
@@ -288,6 +307,8 @@ class _MyHomePageState extends State<MyHomePage> {
         await _peerConnection.createAnswer({'offerToReceiveVideo': 1});
     var session = parse(description.sdp);
     print(json.encode(session));
+    answerController.text = json.encode(session);
+
     sdpController.text = json.encode(session);
     var sendData = {"chat_id": "test", "answer": session};
     http.Response response =
@@ -299,6 +320,7 @@ class _MyHomePageState extends State<MyHomePage> {
             body: json.encode(sendData),
             encoding: Encoding.getByName("utf-8"));
     print(response.statusCode);
+     print(response.body);
     _peerConnection.setLocalDescription(description);
   }
 
@@ -322,7 +344,8 @@ class _MyHomePageState extends State<MyHomePage> {
         RTCSessionDescription description =
             new RTCSessionDescription(sdp, _offer ? 'answer' : 'offer');
         print(description.toMap());
-
+        if (_offer) answerController.text = json.encode(session);
+        if (!_offer) offerTextController.text = json.encode(session);
         _peerConnection.setRemoteDescription(description);
         _send();
       }
@@ -342,7 +365,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
         for (int i = 0; i < list.length; i++) {
           String jsonString = list[i]['candidate'];
-          sdpController.text = jsonString;
+
           dynamic session = jsonDecode('$jsonString');
           // String sdp = write(session, null);
           // RTCSessionDescription description =
@@ -350,12 +373,15 @@ class _MyHomePageState extends State<MyHomePage> {
           //   String jsonString = sdpController.text;
           //dynamic session = await jsonDecode('$jsonString');
           //test
-          print(session['candidate']);
-          dynamic candidate = new RTCIceCandidate(
-              session['candidate'],
-              session['sdpMid'],
-              int.parse(session['sdpMlineIndex'].toString()));
-          _peerConnection.addCandidate(candidate);
+          if ((_offer ? 'answer' : 'offer') == list[i]['ontype']) {
+            print(session['candidate']);
+            sdpController.text = jsonString;
+            dynamic candidate = new RTCIceCandidate(
+                session['candidate'],
+                session['sdpMid'],
+                int.parse(session['sdpMlineIndex'].toString()));
+            _peerConnection.addCandidate(candidate);
+          } else {}
         }
       }
     });
@@ -439,7 +465,27 @@ class _MyHomePageState extends State<MyHomePage> {
         child: TextField(
           controller: sdpController,
           keyboardType: TextInputType.multiline,
-          maxLines: 4,
+          maxLines: 2,
+          maxLength: TextField.noMaxLength,
+        ),
+      );
+
+  Padding offerText() => Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: TextField(
+          controller: offerTextController,
+          keyboardType: TextInputType.multiline,
+          maxLines: 2,
+          maxLength: TextField.noMaxLength,
+        ),
+      );
+
+  Padding answerText() => Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: TextField(
+          controller: answerController,
+          keyboardType: TextInputType.multiline,
+          maxLines: 2,
           maxLength: TextField.noMaxLength,
         ),
       );
@@ -460,6 +506,8 @@ class _MyHomePageState extends State<MyHomePage> {
           videoRenderers(),
           offerAndAnswerButtons(),
           sdpCandidatesTF(),
+          offerText(),
+          answerText(),
           sdpCandidateButtons(),
           RaisedButton(
             child: Text('둥근 버튼'),
@@ -541,7 +589,7 @@ flutterLocalNotificationsPlugin.initialize(initializationSettings,
     var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
     var platformChannelSpecifics = new NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-
+    _setRemoteDescription(_addCandidate);
     print(message);
 //    print(message['body'].toString());
 //    print(json.encode(message));
