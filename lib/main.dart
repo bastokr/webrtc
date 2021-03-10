@@ -6,20 +6,18 @@ import 'package:flutter/material.dart';
 //import 'package:flutter_webrtc/webrtc.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:sdp_transform/sdp_transform.dart';
-import 'package:webrtc/src/loopback_sample.dart'; 
+import 'package:webrtc/src/loopback_sample.dart';
 import 'dart:async';
 import 'dart:core';
 import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
- 
- 
+
 import 'dart:io';
 
 void main() {
   runApp(MyApp());
-} 
-
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -53,20 +51,20 @@ class _MyHomePageState extends State<MyHomePage> {
   RTCVideoRenderer _localRenderer = new RTCVideoRenderer();
   RTCVideoRenderer _remoteRenderer = new RTCVideoRenderer();
   String mytoken;
+  String targetServer = "https://www.toolsda.com/";
 
-  
   String get sdpSemantics =>
       WebRTC.platformIsWindows ? 'plan-b' : 'unified-plan';
   final sdpController = TextEditingController();
 
-  final String currentUserId="";
+  final String currentUserId = "";
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
-   
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
- 
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   bool isLoading = false;
- 
+
   void registerNotification() {
     firebaseMessaging.requestNotificationPermissions();
 
@@ -83,12 +81,11 @@ class _MyHomePageState extends State<MyHomePage> {
       print('onLaunch: $message');
       return;
     });
- 
-    firebaseMessaging.getToken().then((token) {
 
+    firebaseMessaging.getToken().then((token) {
       print('token: $token');
 
-      mytoken=token;
+      mytoken = token;
       /*Firestore.instance
           .collection('users')
           .document(currentUserId)
@@ -97,11 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }).catchError((err) {
       //Fluttertoast.showToast(msg: err.message.toString());
     });
- 
   }
-
-
-
 
   @override
   dispose() {
@@ -117,7 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
     registerNotification();
     super.initState();
     initRenderers();
- _makeCall() ;
+    _makeCall();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -202,7 +195,7 @@ class _MyHomePageState extends State<MyHomePage> {
         print(sendData);
 
         http.Response response =
-            await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
+            await http.post(Uri.parse(targetServer + 'CHAT_UPDATE'),
                 headers: {
                   "Accept": "application/json",
                   "Content-Type": "application/x-www-form-urlencoded"
@@ -268,12 +261,12 @@ class _MyHomePageState extends State<MyHomePage> {
     var session = parse(description.sdp);
     print(json.encode(session));
 
-    var sendData = {"chat_id": "test","mytoken":mytoken , "offer": session};
+    var sendData = {"chat_id": "test", "mytoken": mytoken, "offer": session};
 
     print(sendData);
 
     http.Response response =
-        await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
+        await http.post(Uri.parse(targetServer + 'CHAT_UPDATE'),
             headers: {
               "Accept": "application/json",
               "Content-Type": "application/x-www-form-urlencoded"
@@ -295,7 +288,7 @@ class _MyHomePageState extends State<MyHomePage> {
     sdpController.text = json.encode(session);
     var sendData = {"chat_id": "test", "answer": session};
     http.Response response =
-        await http.post(Uri.parse('http://www.toolsda.com/CHAT_UPDATE'),
+        await http.post(Uri.parse(targetServer + 'CHAT_UPDATE'),
             headers: {
               "Accept": "application/json",
               "Content-Type": "application/x-www-form-urlencoded"
@@ -308,7 +301,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _setRemoteDescription() async {
     http.get(
-      Uri.parse('http://www.toolsda.com/GET_CHAT/test'),
+      Uri.parse(targetServer + 'GET_CHAT/test'),
       headers: {
         "Accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded"
@@ -334,7 +327,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _addCandidate() async {
     http.get(
-      Uri.parse('http://www.toolsda.com/GET_CANDI/test'),
+      Uri.parse(targetServer + 'GET_CANDI/test'),
       headers: {
         "Accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded"
@@ -471,9 +464,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 
-
-
-  
   void configLocalNotification() {
     
     var initializationSettingsAndroid =
@@ -501,6 +491,7 @@ flutterLocalNotificationsPlugin.initialize(initializationSettings,
 */
 
   }
+ 
  Future onDidReceiveLocalNotification(
     int id, String title, String body, String payload) async {
   // display a dialog with the notification details, tap ok to go to another page
@@ -529,6 +520,7 @@ flutterLocalNotificationsPlugin.initialize(initializationSettings,
     ),
   );
 }
+ 
 
   void showNotification(message) async {
     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
@@ -560,12 +552,7 @@ flutterLocalNotificationsPlugin.initialize(initializationSettings,
   }
 
   Future<bool> onBackPress() {
-   // openDialog();
+    // openDialog();
     return Future.value(false);
   }
-
-  
 }
-
-
-
