@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_webrtc/web/rtc_session_description.dart';
 //import 'package:flutter_webrtc/webrtc.dart';
@@ -112,6 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
+    configLocalNotification();
     registerNotification();
     super.initState();
     initRenderers();
@@ -469,22 +471,70 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 
+
+
   
   void configLocalNotification() {
+    
     var initializationSettingsAndroid =
-        new AndroidInitializationSettings('app_icon');
+        new AndroidInitializationSettings('@mipmap/ic_launcher');
+
+
+        
     var initializationSettingsIOS = new IOSInitializationSettings();
     var initializationSettings = new InitializationSettings(
         initializationSettingsAndroid, initializationSettingsIOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings);
+ /*
+
+    const AndroidInitializationSettings initializationSettingsAndroid =
+    AndroidInitializationSettings('app_icon');
+final IOSInitializationSettings initializationSettingsIOS =
+    IOSInitializationSettings(
+        onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+final InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsIOS);
+flutterLocalNotificationsPlugin.initialize(initializationSettings,
+    onSelectNotification: onSelectNotification);
+
+*/
+
   }
- 
+ Future onDidReceiveLocalNotification(
+    int id, String title, String body, String payload) async {
+  // display a dialog with the notification details, tap ok to go to another page
+  showDialog(
+    context: context,
+    builder: (BuildContext context) => CupertinoAlertDialog(
+      title: Text(title),
+      content: Text(body),
+      actions: [
+        CupertinoDialogAction(
+          isDefaultAction: true,
+          child: Text('Ok'),
+          onPressed: () async {
+            Navigator.of(context, rootNavigator: true).pop();
+            /*
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SecondScreen(payload),
+              ),
+            );
+            */
+          },
+        )
+      ],
+    ),
+  );
+}
 
   void showNotification(message) async {
     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
       Platform.isAndroid
-          ? 'com.dfa.flutterchatdemo'
-          : 'com.duytq.flutterchatdemo',
+          ? 'com.srnote.webrtc'
+          : 'com.srnote.webrtc',
       'Flutter chat demo',
       'your channel description',
       playSound: true,
