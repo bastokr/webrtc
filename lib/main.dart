@@ -53,6 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
   RTCVideoRenderer _remoteRenderer = new RTCVideoRenderer();
   String mytoken;
   String targetServer = "https://www.toolsda.com/";
+  bool _isColler = false;
 
   String get sdpSemantics =>
       WebRTC.platformIsWindows ? 'plan-b' : 'unified-plan';
@@ -279,7 +280,11 @@ class _MyHomePageState extends State<MyHomePage> {
     var session = parse(description.sdp);
     print(json.encode(session));
 
-    var sendData = {"chat_id": "test", "mytoken": mytoken, "offer": session};
+    var sendData = {
+      "chat_id": "test",
+      "offer_token": mytoken,
+      "offer": session
+    };
 
     print(sendData);
 
@@ -310,7 +315,11 @@ class _MyHomePageState extends State<MyHomePage> {
     answerController.text = json.encode(session);
 
     sdpController.text = json.encode(session);
-    var sendData = {"chat_id": "test", "answer": session};
+    var sendData = {
+      "chat_id": "test",
+      "answer_token": mytoken,
+      "answer": session
+    };
     http.Response response =
         await http.post(Uri.parse(targetServer + 'CHAT_UPDATE'),
             headers: {
@@ -320,8 +329,9 @@ class _MyHomePageState extends State<MyHomePage> {
             body: json.encode(sendData),
             encoding: Encoding.getByName("utf-8"));
     print(response.statusCode);
-     print(response.body);
+    print(response.body);
     _peerConnection.setLocalDescription(description);
+    //_addCandidate();
   }
 
   void _setRemoteDescription(_send) async {
@@ -382,6 +392,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 int.parse(session['sdpMlineIndex'].toString()));
             _peerConnection.addCandidate(candidate);
           } else {}
+        }
+
+        if (_isColler) {
+          http.get(Uri.parse(targetServer + 'CHAT_CANDI_RETURN/test'),
+              headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/x-www-form-urlencoded"
+              }).then((res) {
+            if (res.statusCode == 200) {}
+          });
+          _isColler=false;
         }
       }
     });
@@ -461,31 +482,31 @@ class _MyHomePageState extends State<MyHomePage> {
       ]);
 
   Padding sdpCandidatesTF() => Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(0.0),
         child: TextField(
           controller: sdpController,
           keyboardType: TextInputType.multiline,
-          maxLines: 2,
+          maxLines: 1,
           maxLength: TextField.noMaxLength,
         ),
       );
 
   Padding offerText() => Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(0.0),
         child: TextField(
           controller: offerTextController,
           keyboardType: TextInputType.multiline,
-          maxLines: 2,
+          maxLines: 1,
           maxLength: TextField.noMaxLength,
         ),
       );
 
   Padding answerText() => Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(0.0),
         child: TextField(
           controller: answerController,
           keyboardType: TextInputType.multiline,
-          maxLines: 2,
+          maxLines: 1,
           maxLength: TextField.noMaxLength,
         ),
       );
@@ -589,7 +610,16 @@ flutterLocalNotificationsPlugin.initialize(initializationSettings,
     var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
     var platformChannelSpecifics = new NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    _setRemoteDescription(_addCandidate);
+    if (_offer) {
+      _setRemoteDescription(_addCandidate);
+
+      _isColler = true;
+    }
+
+    if (!_offer) {
+      _addCandidate();
+    }
+
     print(message);
 //    print(message['body'].toString());
 //    print(json.encode(message));
