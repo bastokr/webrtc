@@ -122,13 +122,17 @@ class _MyHomePageState extends State<MyHomePage> {
     _offer = false;
 
     final Map<String, dynamic> mediaConstraints = {
-      'audio': false,
+      'audio': true,
       'video': true
     };
 
     var configuration = <String, dynamic>{
       'iceServers': [
+           {'url': 'stun:stun.l.google.com:19302'},
+        {'url': 'stun:stun1.l.google.com:19302'},
+        {'url': 'stun:stun2.l.google.com:19302'},
         {'url': 'stun:stun3.l.google.com:19302'},
+        {'url': 'stun:stun4.l.google.com:19302'},
       ],
       'sdpSemantics': sdpSemantics
     };
